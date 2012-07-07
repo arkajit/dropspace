@@ -1,4 +1,8 @@
+Flask==0.9
+Jinja2==2.6
+Werkzeug==0.8.3
 distribute==0.6.27
 dropbox==1.4
+gunicorn==0.14.5
 oauth==1.0.1
 simplejson==2.6.0
