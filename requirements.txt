@@ -1,0 +1,4 @@
+distribute==0.6.27
+dropbox==1.4
+oauth==1.0.1
+simplejson==2.6.0
