@@ -25,7 +25,7 @@ def index():
     request_token = sess.obtain_request_token()
     flask.current_app.config[request_token.key] = request_token.to_string()
     url = sess.build_authorize_url(request_token,
-                                   flask.url_for('finish_oauth'))
+                                   flask.url_for('finish_oauth', _external=True))
     return flask.render_template('login.html', dropbox_url=url)
 
 @app.route('/finauth')
