@@ -10,13 +10,15 @@ $(document).ready(function() {
     },
     series: [{
       type: 'pie',
-      name: 'Root directory',
-      data: [
-        ['foo', 23],
-        ['bar', 15],
-        ['baz', 37],
-      ]
+      name: 'Space Used',
+      data: [],
     }],
   };
-  chart = new Highcharts.Chart(options);
+  $.getJSON($SCRIPT_ROOT + '/_spacedata', {
+      'root': 'dropbox'
+    }, function (data) {
+      // Don't need to parseJSON, since data is not a string, but a JSON object.
+      options.series[0].data = data.result || [];
+      chart = new Highcharts.Chart(options);
+    });
 });

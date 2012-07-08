@@ -10,6 +10,7 @@ app = flask.Flask(__name__)
 
 DROP_COOKIE = 'dropspace'
 
+### MAIN Handlers ###
 @app.route('/')
 def index():
   sess = dropbox.session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
@@ -50,6 +51,13 @@ def finish_oauth():
   else:
     app.logger.debug('No stored access token found!')
   return resp
+
+### AJAX Endpoints ###
+@app.route('/_spacedata')
+def spacedata():
+  rootdir = flask.request.args.get('root', 'dropbox', type=str)
+  data = [['foo', 23], ['bar', 15], ['baz', 37]]
+  return flask.jsonify(result=data)
 
 if __name__ == '__main__':
   port = int(os.environ.get('PORT', 5000))
