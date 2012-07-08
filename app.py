@@ -17,16 +17,20 @@ def index():
   if access_token:
     sess.set_token(*access_token.split('|'))
     client = dropbox.client.DropboxClient(sess)
-    info = client.account_info()
-    return flask.render_template('index.html',
-                                 name=info['display_name'],
-                                 quota=info['quota_info']['quota'])
-  else:
-    request_token = sess.obtain_request_token()
-    flask.current_app.config[request_token.key] = request_token.to_string()
-    url = sess.build_authorize_url(request_token,
-                                   flask.url_for('finish_oauth', _external=True))
-    return flask.render_template('login.html', dropbox_url=url)
+    try:
+      info = client.account_info()
+      return flask.render_template('index.html',
+                                   name=info['display_name'],
+                                   quota=info['quota_info']['quota'])
+    except dropbox.rest.ErrorResponse:
+      pass
+
+  # No access token (or expire/revoked). Reauthenticate.
+  request_token = sess.obtain_request_token()
+  flask.current_app.config[request_token.key] = request_token.to_string()
+  url = sess.build_authorize_url(request_token,
+                                 flask.url_for('finish_oauth', _external=True))
+  return flask.render_template('login.html', dropbox_url=url)
 
 @app.route('/finauth')
 def finish_oauth():
