@@ -1,6 +1,15 @@
 <!doctype html>
 <title>Dropspace</title>
 <head>
+  <script type="text/javascript"
+          src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js">
+  </script>
+  <script type="text/javascript"
+          src="{{ url_for('static', filename='highcharts.js') }}">
+  </script>
+  <script type="text/javascript"
+          src="{{ url_for('static', filename='spacecharts.js') }}">
+  </script>
 </head>
 
 <h1>Dropbox Space Details</h1>
@@ -9,6 +18,9 @@
   <li>User: {{ name }}</li>
   <li>Quota (Bytes): {{ quota }}</li>
 </ul>
+<div id="spacechart">
+
+</div>
 {% else %}
 <p> You need to link your Dropbox account to the application. </p>
 {% endif %}
