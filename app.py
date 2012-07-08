@@ -3,11 +3,11 @@ import flask
 import oauth
 import os
 
+# Add your own credentials to use.
+from creds import APP_KEY, APP_SECRET, ACCESS_TYPE
+
 app = flask.Flask(__name__)
 
-APP_KEY = '7tklqprz9csy80z'
-APP_SECRET = '0g2kziivrbwj74y'
-ACCESS_TYPE = 'dropbox'
 DROP_COOKIE = 'dropspace'
 
 @app.route('/')
