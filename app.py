@@ -45,7 +45,7 @@ def index():
       return flask.render_template('index.html',
                                    name=info['display_name'],
                                    quota=info['quota_info']['quota'])
-    except AttributeError, dropbox.rest.ErrorResponse:
+    except (AttributeError, dropbox.rest.ErrorResponse):
       # If DropboxUser not found or access token expired, try reauthenticating.
       pass
 
