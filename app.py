@@ -4,13 +4,16 @@ import oauth
 import os
 
 from flask.ext.sqlalchemy import SQLAlchemy
+from flask_heroku import Heroku
 
 # Add your own credentials to use.
 from creds import APP_KEY, APP_SECRET, ACCESS_TYPE
 DROP_COOKIE = 'dropspace'
 
 app = flask.Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+heroku = Heroku(app)  # Only works in prod
+#app.config['SQLALCHEMY_DATABASE_URI'] =
+#  'postgres://username:password@host:port/database_name'
 db = SQLAlchemy(app)
 
 class DropboxUser(db.Model):
