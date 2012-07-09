@@ -3,20 +3,40 @@ import flask
 import oauth
 import os
 
+from flask.ext.sqlalchemy import SQLAlchemy
+
 # Add your own credentials to use.
 from creds import APP_KEY, APP_SECRET, ACCESS_TYPE
+DROP_COOKIE = 'dropspace'
 
 app = flask.Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+db = SQLAlchemy(app)
 
-DROP_COOKIE = 'dropspace'
+class DropboxUser(db.Model):
+  # The user's Dropbox uid.
+  id = db.Column(db.Integer, primary_key=True)
+  # A valid access token stored in format key|secret.
+  token = db.Column(db.String(80))
+  # The cursor from the last time the user's Dropbox data was fetched.
+  cursor = db.Column(db.String(250))
+  #root_id = db.Column(db.Integer)
+
+  def __init__(self, uid, token):
+    self.id = uid
+    self.token = token
+
+  def __repr__(self):
+    return '<User %r>' % self.id
 
 ### MAIN Handlers ###
 @app.route('/')
 def index():
   sess = dropbox.session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
-  access_token = flask.request.cookies.get(DROP_COOKIE)
-  if access_token:
-    sess.set_token(*access_token.split('|'))
+  uid = flask.request.cookies.get(DROP_COOKIE)
+  if uid:
+    dropbox_user = DropboxUser.query.filter_by(id=uid).first()
+    sess.set_token(*dropbox_user.token.split('|'))
     client = dropbox.client.DropboxClient(sess)
     try:
       info = client.account_info()
@@ -39,15 +59,18 @@ def finish_oauth():
 
   # Try to obtain an access token. Set it as a cookie on the user before
   # redirecting to main page.
-  uid = flask.request.args.get('uid')
+  uid = flask.request.args.get('uid', type=int)
   token = flask.request.args.get('oauth_token')
   stored_token = flask.current_app.config.get(token)
-  if stored_token:
+  if stored_token and uid:
     request_token = oauth.oauth.OAuthToken.from_string(stored_token)
     sess = dropbox.session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
     access_token = sess.obtain_access_token(request_token)
-    resp.set_cookie(DROP_COOKIE,
-                    "%s|%s" % (access_token.key, access_token.secret))
+    token_str = "%s|%s" % (access_token.key, access_token.secret)
+    dropbox_user = DropboxUser(uid, token_str)
+    db.session.add(dropbox_user)
+    db.session.commit()
+    resp.set_cookie(DROP_COOKIE, uid)
   else:
     app.logger.debug('No stored access token found!')
   return resp
@@ -56,6 +79,7 @@ def finish_oauth():
 @app.route('/_spacedata')
 def spacedata():
   rootdir = flask.request.args.get('root', 'dropbox', type=str)
+  dropbox_uid = flask.request.args.get('uid')
   data = [['foo', 23], ['bar', 15], ['baz', 37]]
   return flask.jsonify(result=data)
 
