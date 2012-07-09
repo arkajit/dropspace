@@ -12,8 +12,7 @@ DROP_COOKIE = 'dropspace'
 
 app = flask.Flask(__name__)
 heroku = Heroku(app)  # Only works in prod
-#app.config['SQLALCHEMY_DATABASE_URI'] =
-#  'postgres://username:password@host:port/database_name'
+#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://rxnkjyyweehxqn:cbtj85IGf_jBWCysb3EUismlag@ec2-23-23-237-0.compute-1.amazonaws.com:5432/d2lrilstv7vija'
 db = SQLAlchemy(app)
 
 class DropboxUser(db.Model):
@@ -38,18 +37,19 @@ def index():
   sess = dropbox.session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
   uid = flask.request.cookies.get(DROP_COOKIE)
   if uid:
-    dropbox_user = DropboxUser.query.filter_by(id=uid).first()
-    sess.set_token(*dropbox_user.token.split('|'))
-    client = dropbox.client.DropboxClient(sess)
     try:
+      dropbox_user = DropboxUser.query.filter_by(id=uid).first()
+      sess.set_token(*dropbox_user.token.split('|'))
+      client = dropbox.client.DropboxClient(sess)
       info = client.account_info()
       return flask.render_template('index.html',
                                    name=info['display_name'],
                                    quota=info['quota_info']['quota'])
-    except dropbox.rest.ErrorResponse:
+    except AttributeError, dropbox.rest.ErrorResponse:
+      # If DropboxUser not found or access token expired, try reauthenticating.
       pass
 
-  # No access token (or expire/revoked). Reauthenticate.
+  # Authenticate user
   request_token = sess.obtain_request_token()
   flask.current_app.config[request_token.key] = request_token.to_string()
   url = sess.build_authorize_url(request_token,
@@ -70,13 +70,17 @@ def finish_oauth():
     sess = dropbox.session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
     access_token = sess.obtain_access_token(request_token)
     token_str = "%s|%s" % (access_token.key, access_token.secret)
-    dropbox_user = DropboxUser(uid, token_str)
-    db.session.add(dropbox_user)
-    db.session.commit()
+    add_dropbox_user(uid, token_str)
     resp.set_cookie(DROP_COOKIE, uid)
   else:
     app.logger.debug('No stored access token found!')
   return resp
+
+# If user exists, update his token. Else add him.
+def add_dropbox_user(uid, token):
+  dropbox_user = DropboxUser(uid, token)
+  db.session.merge(dropbox_user)
+  db.session.commit()
 
 ### AJAX Endpoints ###
 @app.route('/_spacedata')
