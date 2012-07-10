@@ -23,15 +23,30 @@ class DropboxUser(db.Model):
   def access_token(self):
     return self.token.split('|')
 
+  def account_info(self):
+    session.set_token(*self.access_token())
+    try:
+      return client.account_info()
+    except dropbox.rest.ErrorResponse:
+      pass
+
+  def delta(self):
+    session.set_token(*self.access_token())
+    cursor = self.cursor or None
+    try:
+      d = client.delta(cursor)
+    except dropbox.rest.ErrorResponse:
+      return None
+    self.cursor = d['cursor']
+    db.session.merge(self)
+    db.session.commit()
+    return d
+
   @classmethod
   def get_account_info(cls, uid):
     user = DropboxUser.query.filter_by(uid=uid).first()
     if user:
-      session.set_token(*user.access_token())
-      try:
-        return client.account_info()
-      except dropbox.rest.ErrorResponse:
-        pass
+      return user.account_info()
 
   @classmethod
   def add_user(cls, uid, token):

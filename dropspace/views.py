@@ -1,9 +1,7 @@
+from dropspace import app, session, COOKIE_NAME
+from dropspace.models import DropboxUser
 import flask
 import oauth
-from dropspace import app, session
-from dropspace.models import DropboxUser
-
-COOKIE_NAME = 'dropspace'
 
 @app.route('/')
 def index():
@@ -15,6 +13,7 @@ def index():
                                  name=account_info['display_name'],
                                  used=quota_info['normal']+quota_info['shared'],
                                  quota=quota_info['quota'])
+
   # If can't find account info, authenticate user.
   request_token = session.obtain_request_token()
   flask.current_app.config[request_token.key] = request_token.to_string()

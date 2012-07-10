@@ -3,6 +3,10 @@ body {
   background: #eee;
 }
 
+#quotachart {
+  width:500px;
+}
+
 #sitename {
   font-size:64px;
 }
