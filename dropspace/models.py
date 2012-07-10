@@ -2,10 +2,8 @@ import dropbox
 from dropspace import client, db, session
 
 class DropboxUser(db.Model):
-  # A unique, increasing key (NOT the dropbox id).
-  id = db.Column(db.Integer, primary_key=True)
   # The user's Dropbox uid.
-  uid = db.Column(db.Integer, unique=True)
+  uid = db.Column(db.Integer, primary_key=True)
   # A valid access token stored in format key|secret.
   token = db.Column(db.String(80))
   # The cursor from the last time the user's Dropbox data was fetched.
