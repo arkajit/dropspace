@@ -8,7 +8,6 @@ class DropboxUser(db.Model):
   token = db.Column(db.String(80))
   # The cursor from the last time the user's Dropbox data was fetched.
   cursor = db.Column(db.String(250))
-  #root_id = db.Column(db.Integer)
 
   def __init__(self, uid, token):
     self.uid = uid
