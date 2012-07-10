@@ -11,8 +11,7 @@ from creds import APP_KEY, APP_SECRET, ACCESS_TYPE
 DROP_COOKIE = 'dropspace'
 
 app = flask.Flask(__name__)
-heroku = Heroku(app)  # Only works in prod
-#app.config['SQLALCHEMY_DATABASE_URI'] = 'postgres://rxnkjyyweehxqn:cbtj85IGf_jBWCysb3EUismlag@ec2-23-23-237-0.compute-1.amazonaws.com:5432/d2lrilstv7vija'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 db = SQLAlchemy(app)
 
 class DropboxUser(db.Model):
@@ -89,6 +88,18 @@ def spacedata():
   dropbox_uid = flask.request.args.get('uid')
   data = [['foo', 23], ['bar', 15], ['baz', 37]]
   return flask.jsonify(result=data)
+
+# Source:
+# http://stackoverflow.com/questions/1094841/reusable-library-to-get-human-readable-version-of-file-size
+# Use this instead of filesizeformat filter b/c of open bug
+# https://github.com/mitsuhiko/jinja2/pull/53.
+@app.template_filter('filesizefmt')
+def filesize_filter(num):
+  for x in ['bytes','KB','MB','GB']:
+      if num < 1024.0:
+          return "%3.1f%s" % (num, x)
+      num /= 1024.0
+  return "%3.1f%s" % (num, 'TB')
 
 if __name__ == '__main__':
   port = int(os.environ.get('PORT', 5000))

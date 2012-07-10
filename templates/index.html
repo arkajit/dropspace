@@ -1,15 +1,5 @@
 {% extends "base.html" %}
 {% block body %}
 <h1>Dropbox Space Details</h1>
-{% if name %}
-<ul>
-  <li>User: {{ name }}</li>
-  <li>Quota (Bytes): {{ quota }}</li>
-</ul>
-<div id="spacechart">
-
-</div>
-{% else %}
-<p> You need to link your Dropbox account to the application. </p>
-{% endif %}
+<div id="spacechart"></div>
 {% endblock %}

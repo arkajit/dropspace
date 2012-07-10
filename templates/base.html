@@ -13,4 +13,15 @@
 <script type="text/javascript"
         src="{{ url_for('static', filename='spacecharts.js') }}">
 </script>
+<body>
+<div id="header">
+  <span id="sitename">Dropspace</span>
+  {% if name %}
+  <div id="userdetails">
+    <span id="username">{{ name }}</span><br>
+    <span id="quota">?? / {{ quota | filesizefmt }}</span>
+   </div>
+  {% endif %}
+</div>
 {% block body %}{% endblock %}
+</body>
