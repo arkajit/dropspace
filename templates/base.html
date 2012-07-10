@@ -19,7 +19,7 @@
   {% if name %}
   <div id="userdetails">
     <span id="username">{{ name }}</span><br>
-    <span id="quota">?? / {{ quota | filesizefmt }}</span>
+    <span id="quota">{{ used | filesizefmt }} / {{ quota | filesizefmt }}</span>
    </div>
   {% endif %}
 </div>

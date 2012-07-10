@@ -41,9 +41,11 @@ def index():
       sess.set_token(*dropbox_user.token.split('|'))
       client = dropbox.client.DropboxClient(sess)
       info = client.account_info()
+      quota_info = info['quota_info']
       return flask.render_template('index.html',
                                    name=info['display_name'],
-                                   quota=info['quota_info']['quota'])
+                                   used=quota_info['normal']+quota_info['shared'],
+                                   quota=quota_info['quota'])
     except (AttributeError, dropbox.rest.ErrorResponse):
       # If DropboxUser not found or access token expired, try reauthenticating.
       pass
