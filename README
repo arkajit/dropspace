@@ -1,0 +1,28 @@
+A simple tool to analyze your Dropbox space utilization.
+
+Prerequisites:
+  Use the python virtualenv to run the following commands:
+  $ source venv/bin/activate
+
+  It should have all the necessary dependencies (e.g Dropbox SDK, Flask, etc...)
+  installed, but if not, can do:
+  (venv)$ pip install -r requirements.txt
+
+  If you install new requirements, update the file with:
+  (venv)$ pip freeze -l > requirements.txt
+
+  To exit virtualenv:
+  (venv)$ deactivate
+
+Run Development server:
+  (venv)$ python runserver.py
+  Launches at localhost:5000
+
+Run Production server:
+  (venv)$ gunicorn -b 0.0.0.0:9000 -w 4 dropspace:app --access-logfile=prod.log -D
+  Will launch a daemonized Gunicorn process at localhost:9000.
+  Writes access logs to prod.log.
+
+Reset the DB:
+  (venv)$ python resetdb.py
+  Warning: This drops all tables and recreates them from scratch.

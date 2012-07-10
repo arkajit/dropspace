@@ -5,7 +5,7 @@ from creds import APP_KEY, APP_SECRET, ACCESS_TYPE
 from flask.ext.sqlalchemy import SQLAlchemy
 
 app = flask.Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/dropspace.db'
 db = SQLAlchemy(app)
 session = dropbox.session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
 client = dropbox.client.DropboxClient(session)
