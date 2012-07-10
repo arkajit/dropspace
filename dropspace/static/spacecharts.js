@@ -1,4 +1,5 @@
 var quota_chart, space_chart;
+
 $(document).ready(function() {
   var qc_options = {
     chart: {
@@ -7,6 +8,12 @@ $(document).ready(function() {
     }, 
     title: {
       text: 'Dropbox Quota Consumption'
+    },
+    tooltip: {
+      formatter: function() {
+        return '<b>'+this.point.name+'</b>: ' +
+          this.point.percentage.toFixed(2) + '%'
+      }
     },
     series: [{
       type: 'pie',
