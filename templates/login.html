@@ -1,9 +1,6 @@
-<!doctype html>
-<head>
-  <title>DropSpace</title>
-</head>
-<body>
-  <h1>Analyze how you're using the space in your Dropbox</h1>
-  <a href="{{ dropbox_url }}">Login with Dropbox</a>
-</body>
+{% extends "base.html" %}
+{% block body %}
+<h1>Analyze how you're using the space in your Dropbox</h1>
+<a href="{{ dropbox_url }}">Login with Dropbox</a>
+{% endblock %}
 
