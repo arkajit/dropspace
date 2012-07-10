@@ -2,8 +2,10 @@ import dropbox
 from dropspace import client, db, session
 
 class DropboxUser(db.Model):
-  # The user's Dropbox uid.
+  # A unique, increasing key (NOT the dropbox id).
   id = db.Column(db.Integer, primary_key=True)
+  # The user's Dropbox uid.
+  uid = db.Column(db.Integer, unique=True)
   # A valid access token stored in format key|secret.
   token = db.Column(db.String(80))
   # The cursor from the last time the user's Dropbox data was fetched.
@@ -11,7 +13,7 @@ class DropboxUser(db.Model):
   #root_id = db.Column(db.Integer)
 
   def __init__(self, uid, token):
-    self.id = uid
+    self.uid = uid
     self.token = token
 
   def __repr__(self):
@@ -23,7 +25,7 @@ class DropboxUser(db.Model):
 
   @classmethod
   def get_account_info(cls, uid):
-    user = DropboxUser.query.filter_by(id=uid).first()
+    user = DropboxUser.query.filter_by(uid=uid).first()
     if user:
       session.set_token(*user.access_token())
       try:
