@@ -14,6 +14,8 @@ app = flask.Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 db = SQLAlchemy(app)
 
+session = dropbox.session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
+
 class DropboxUser(db.Model):
   # The user's Dropbox uid.
   id = db.Column(db.Integer, primary_key=True)
@@ -30,31 +32,37 @@ class DropboxUser(db.Model):
   def __repr__(self):
     return '<User %r>' % self.id
 
+  # Returns access token tuple (key, secret)
+  def access_token(self):
+    return self.token.split('|')
+
+  @classmethod
+  def get_account_info(cls, uid):
+    user = DropboxUser.query.filter_by(id=uid).first()
+    if user:
+      session.set_token(*user.access_token())
+      client = dropbox.client.DropboxClient(session)
+      try:
+        return client.account_info()
+      except dropbox.rest.ErrorResponse:
+        pass
+
 ### MAIN Handlers ###
 @app.route('/')
 def index():
-  sess = dropbox.session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
   uid = flask.request.cookies.get(DROP_COOKIE)
-  if uid:
-    try:
-      dropbox_user = DropboxUser.query.filter_by(id=uid).first()
-      sess.set_token(*dropbox_user.token.split('|'))
-      client = dropbox.client.DropboxClient(sess)
-      info = client.account_info()
-      quota_info = info['quota_info']
-      return flask.render_template('index.html',
-                                   name=info['display_name'],
-                                   used=quota_info['normal']+quota_info['shared'],
-                                   quota=quota_info['quota'])
-    except (AttributeError, dropbox.rest.ErrorResponse):
-      # If DropboxUser not found or access token expired, try reauthenticating.
-      pass
-
-  # Authenticate user
-  request_token = sess.obtain_request_token()
+  account_info = DropboxUser.get_account_info(uid)
+  if account_info:
+    quota_info = account_info['quota_info']
+    return flask.render_template('index.html',
+                                 name=account_info['display_name'],
+                                 used=quota_info['normal']+quota_info['shared'],
+                                 quota=quota_info['quota'])
+  # If can't find account info, authenticate user.
+  request_token = session.obtain_request_token()
   flask.current_app.config[request_token.key] = request_token.to_string()
-  url = sess.build_authorize_url(request_token,
-                                 flask.url_for('finish_oauth', _external=True))
+  url = session.build_authorize_url(request_token,
+                                    flask.url_for('finish_oauth', _external=True))
   return flask.render_template('login.html', dropbox_url=url)
 
 @app.route('/finauth')
@@ -68,8 +76,7 @@ def finish_oauth():
   stored_token = flask.current_app.config.get(token)
   if stored_token and uid:
     request_token = oauth.oauth.OAuthToken.from_string(stored_token)
-    sess = dropbox.session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
-    access_token = sess.obtain_access_token(request_token)
+    access_token = session.obtain_access_token(request_token)
     token_str = "%s|%s" % (access_token.key, access_token.secret)
     add_dropbox_user(uid, token_str)
     resp.set_cookie(DROP_COOKIE, uid)
@@ -89,6 +96,19 @@ def spacedata():
   rootdir = flask.request.args.get('root', 'dropbox', type=str)
   dropbox_uid = flask.request.args.get('uid')
   data = [['foo', 23], ['bar', 15], ['baz', 37]]
+  return flask.jsonify(result=data)
+
+@app.route('/_quotainfo')
+def quota_info():
+  dropbox_uid = flask.request.args.get('uid', type=int)
+  account_info = DropboxUser.get_account_info(dropbox_uid) or {}
+  quota_info = account_info.get('quota_info')
+  data = []
+  if quota_info:
+    quota_info['free'] = quota_info['quota'] - (quota_info['normal'] +
+                                                quota_info['shared'])
+    del quota_info['quota']
+    data = map(list, quota_info.items())
   return flask.jsonify(result=data)
 
 # Source:

@@ -14,8 +14,8 @@ $(document).ready(function() {
       data: [],
     }],
   };
-  $.getJSON($SCRIPT_ROOT + '/_spacedata', {
-      'root': 'dropbox'
+  $.getJSON($SCRIPT_ROOT + '/_quotainfo', {
+      'uid': '12013862'
     }, function (data) {
       // Don't need to parseJSON, since data is not a string, but a JSON object.
       options.series[0].data = data.result || [];
