@@ -13,13 +13,21 @@ def index():
                                  name=account_info['display_name'],
                                  used=quota_info['normal']+quota_info['shared'],
                                  quota=quota_info['quota'])
+  else:
+    return flask.redirect(flask.url_for('login'))
 
-  # If can't find account info, authenticate user.
-  request_token = session.obtain_request_token()
-  flask.current_app.config[request_token.key] = request_token.to_string()
-  url = session.build_authorize_url(request_token,
-                                    flask.url_for('finish_oauth', _external=True))
-  return flask.render_template('login.html', dropbox_url=url)
+@app.route('/login')
+def login():
+  login_url = flask.url_for('index')
+  # Build authorization URL if we don't already know the user id.
+  if not flask.request.cookies.get(COOKIE_NAME):
+      request_token = session.obtain_request_token()
+      flask.current_app.config[request_token.key] = request_token.to_string()
+      login_url = session.build_authorize_url(
+                      request_token,
+                      flask.url_for('finish_oauth', _external=True))
+
+  return flask.render_template('login.html', dropbox_url=login_url)
 
 @app.route('/finauth')
 def finish_oauth():

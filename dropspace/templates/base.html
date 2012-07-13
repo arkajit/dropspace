@@ -18,7 +18,8 @@
   <span id="sitename">Dropspace</span>
   {% if name %}
   <div id="userdetails">
-    <span id="username">{{ name }}</span><br>
+      <span id="username">{{ name }}</span>
+      (<a href="{{ url_for('login') }}">Logout</a>)<br>
     <span id="quota">{{ used | filesizefmt }} / {{ quota | filesizefmt }}</span>
    </div>
   {% endif %}
