@@ -15,7 +15,7 @@ def index():
                                  used=quota_info['normal']+quota_info['shared'],
                                  quota=quota_info['quota'])
   else:
-    flask.session.pop('uid')
+    flask.session.pop('uid', None)
     return flask.redirect(flask.url_for('login'))
 
 @app.route('/login')
@@ -26,7 +26,7 @@ def login():
         dropbox_url=flask.url_for('index'))
   else:
     request_token = session.obtain_request_token()
-    flask.current_app.config[request_token.key] = request_token.to_string()
+    flask.session[request_token.key] = request_token.to_string()
     login_url = session.build_authorize_url(
                     request_token,
                     flask.url_for('finish_oauth', _external=True))
@@ -34,13 +34,9 @@ def login():
 
 @app.route('/finauth')
 def finish_oauth():
-  resp = flask.make_response(flask.redirect(flask.url_for('index')))
-
-  # Try to obtain an access token. Set it as a cookie on the user before
-  # redirecting to main page.
   uid = flask.request.args.get('uid', type=int)
   token = flask.request.args.get('oauth_token')
-  stored_token = flask.current_app.config.get(token)
+  stored_token = flask.session.get(token)
   if stored_token and uid:
     request_token = oauth.oauth.OAuthToken.from_string(stored_token)
     access_token = session.obtain_access_token(request_token)
@@ -49,4 +45,5 @@ def finish_oauth():
     flask.session['uid'] = uid
   else:
     app.logger.debug('No stored access token found!')
-  return resp
+
+  return flask.redirect(flask.url_for('index'))
