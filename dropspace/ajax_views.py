@@ -1,11 +1,11 @@
-from dropspace import app, COOKIE_NAME
+from dropspace import app
 from dropspace.models import DropboxUser
 import flask
 import json
 
 @app.route('/_spacedata')
 def spacedata():
-  uid = flask.request.cookies.get(COOKIE_NAME, -1)
+  uid = flask.session.get('uid', -1)
   dropbox_uid = flask.request.args.get('uid', uid, type=int)
   try:
     f = open("deltas/%s" % dropbox_uid)
@@ -23,7 +23,7 @@ def spacedata():
 
 @app.route('/_quotainfo')
 def quota_info():
-  uid = flask.request.cookies.get(COOKIE_NAME, -1)
+  uid = flask.session.get('uid', -1)
   dropbox_uid = flask.request.args.get('uid', uid, type=int)
   account_info = DropboxUser.get_account_info(dropbox_uid) or {}
   quota_info = account_info.get('quota_info')

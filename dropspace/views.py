@@ -1,33 +1,36 @@
-from dropspace import app, session, COOKIE_NAME
+from dropspace import app, session
 from dropspace.models import DropboxUser
 import flask
 import oauth
 
 @app.route('/')
 def index():
-  uid = flask.request.cookies.get(COOKIE_NAME)
+  uid = flask.session.get('uid')
   account_info = DropboxUser.get_account_info(uid)
   if account_info:
+    flask.session['loggedin'] = True
     quota_info = account_info['quota_info']
     return flask.render_template('index.html',
                                  name=account_info['display_name'],
                                  used=quota_info['normal']+quota_info['shared'],
                                  quota=quota_info['quota'])
   else:
+    flask.session.pop('uid')
     return flask.redirect(flask.url_for('login'))
 
 @app.route('/login')
 def login():
-  login_url = flask.url_for('index')
-  # Build authorization URL if we don't already know the user id.
-  if not flask.request.cookies.get(COOKIE_NAME):
-      request_token = session.obtain_request_token()
-      flask.current_app.config[request_token.key] = request_token.to_string()
-      login_url = session.build_authorize_url(
-                      request_token,
-                      flask.url_for('finish_oauth', _external=True))
-
-  return flask.render_template('login.html', dropbox_url=login_url)
+  flask.session['loggedin'] = False
+  if 'uid' in flask.session:
+    return flask.render_template('login.html',
+        dropbox_url=flask.url_for('index'))
+  else:
+    request_token = session.obtain_request_token()
+    flask.current_app.config[request_token.key] = request_token.to_string()
+    login_url = session.build_authorize_url(
+                    request_token,
+                    flask.url_for('finish_oauth', _external=True))
+    return flask.render_template('login.html', dropbox_url=login_url)
 
 @app.route('/finauth')
 def finish_oauth():
@@ -43,7 +46,7 @@ def finish_oauth():
     access_token = session.obtain_access_token(request_token)
     token_str = "%s|%s" % (access_token.key, access_token.secret)
     DropboxUser.add_user(uid, token_str)
-    resp.set_cookie(COOKIE_NAME, uid)
+    flask.session['uid'] = uid
   else:
     app.logger.debug('No stored access token found!')
   return resp

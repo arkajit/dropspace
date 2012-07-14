@@ -5,11 +5,13 @@ from creds import APP_KEY, APP_SECRET, ACCESS_TYPE
 from flask.ext.sqlalchemy import SQLAlchemy
 
 app = flask.Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/dropspace.db'
+app.secret_key = '\x9de\xbe\x8d\xfc\xacw\xc1\xefhO\x8dm\xbd\xc9\xb9i\xbb\x99}\xf9\xd1k\x17'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
 db = SQLAlchemy(app)
+
 session = dropbox.session.DropboxSession(APP_KEY, APP_SECRET, ACCESS_TYPE)
 client = dropbox.client.DropboxClient(session)
-COOKIE_NAME = 'dropspace'
 
 # These imports must be at the end since the following modules depend on the
 # objects created above. (This is a bit circular, but is actually the structure
