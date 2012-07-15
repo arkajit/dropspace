@@ -13,8 +13,10 @@ class DropboxUser(db.Model):
 
   # Id of the root of the user's Dropbox.
   root_id = db.Column(db.Integer, db.ForeignKey('file_metadata.id'))
-  root = db.relationship('FileMetadata',
-      backref=db.backref('owner', uselist=False, cascade='all, delete-orphan'))
+  root = db.relationship(
+      'FileMetadata',
+      backref=db.backref('owner', uselist=False, cascade='all, delete-orphan'),
+      single_parent=True)
 
   def __init__(self, uid, token):
     self.id = uid
@@ -86,11 +88,18 @@ class FileMetadata(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   path = db.Column(db.String(500), nullable=False)
   size = db.Column(db.BigInteger)
-  parent_id = db.Column(db.Integer, db.ForeignKey('file_metadata.id'))
+  parent_id = db.Column(db.Integer, db.ForeignKey('file_metadata.id'),
+                        index=True)
   #parent = db.relationship('FileMetadata', backref='children')
-  children = db.relationship('FileMetadata', cascade='all',
+  children = db.relationship(
+      'FileMetadata',
+      cascade='all, delete-orphan',
       backref=db.backref('parent', remote_side=id),
-      collection_class=attribute_mapped_collection('path'))
+      collection_class=attribute_mapped_collection('path'),
+      innerjoin=True,
+      join_depth=2,
+      lazy="joined",
+      single_parent=True)
 
   def __init__(self, path, size, parent=None, owner=None):
     self.path = path
@@ -135,6 +144,12 @@ class FileMetadata(db.Model):
         return child
     else:
       return self
+
+  def get_size(self):
+    if len(self.children) == 0:
+      return self.size
+    else:
+      return sum([c.get_size() for c in self.children.values()])
 
   def __repr__(self):
     return '<FileMetadata(id=%r, path=%r, size=%r)>' % (self.id, self.path, self.size)
