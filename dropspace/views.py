@@ -3,14 +3,14 @@ from dropspace.models import DropboxUser
 import flask
 import oauth
 
-@app.route('/')
-def index():
+@app.route('/stats')
+def stats():
   uid = flask.session.get('uid')
   account_info = DropboxUser.get_account_info(uid)
   if account_info:
     flask.session['loggedin'] = True
     quota_info = account_info['quota_info']
-    return flask.render_template('index.html',
+    return flask.render_template('stats.html',
                                  name=account_info['display_name'],
                                  used=quota_info['normal']+quota_info['shared'],
                                  quota=quota_info['quota'])
@@ -18,12 +18,13 @@ def index():
     flask.session.pop('uid', None)
     return flask.redirect(flask.url_for('login'))
 
+@app.route('/')
 @app.route('/login')
 def login():
   flask.session['loggedin'] = False
   if 'uid' in flask.session:
     return flask.render_template('login.html',
-        dropbox_url=flask.url_for('index'))
+        dropbox_url=flask.url_for('stats'))
   else:
     request_token = session.obtain_request_token()
     flask.session[request_token.key] = request_token.to_string()
@@ -46,4 +47,4 @@ def finish_oauth():
   else:
     app.logger.debug('No stored access token found!')
 
-  return flask.redirect(flask.url_for('index'))
+  return flask.redirect(flask.url_for('stats'))
