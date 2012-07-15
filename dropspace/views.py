@@ -10,7 +10,6 @@ def stats():
   account_info = {}
   if user:
     account_info = user.account_info()
-    user.delta()
 
   if account_info:
     flask.session['loggedin'] = True
