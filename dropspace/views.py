@@ -48,3 +48,6 @@ def finish_oauth():
     app.logger.debug('No stored access token found!')
 
   return flask.redirect(flask.url_for('stats'))
+
+def process_delta():
+  pass

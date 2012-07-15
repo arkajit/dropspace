@@ -3,14 +3,14 @@ from dropspace import client, db, session
 
 class DropboxUser(db.Model):
   # The user's Dropbox uid.
-  uid = db.Column(db.Integer, primary_key=True)
+  id = db.Column(db.Integer, primary_key=True)
   # A valid access token stored in format key|secret.
   token = db.Column(db.String(80))
   # The cursor from the last time the user's Dropbox data was fetched.
   cursor = db.Column(db.String(250))
 
   def __init__(self, uid, token):
-    self.uid = uid
+    self.id = uid
     self.token = token
 
   def __repr__(self):
@@ -40,8 +40,8 @@ class DropboxUser(db.Model):
     return d
 
   @classmethod
-  def get_account_info(cls, uid):
-    user = DropboxUser.query.filter_by(uid=uid).first()
+  def get_account_info(cls, id):
+    user = DropboxUser.query.get(id)
     if user:
       return user.account_info()
 
