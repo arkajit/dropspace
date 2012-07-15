@@ -30,7 +30,6 @@ $(document).ready(function() {
       quota_chart = new Highcharts.Chart(qc_options);
     });
 
-  /* TODO(arkajit): Re-enable when complete.
   var sc_options = {
     chart: {
       renderTo: 'spacechart',
@@ -50,5 +49,4 @@ $(document).ready(function() {
       sc_options.series[0].data = data.result || [];
       space_chart = new Highcharts.Chart(sc_options);
     });
-  */
 });

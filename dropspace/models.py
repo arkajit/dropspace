@@ -98,10 +98,6 @@ class FileMetadata(db.Model):
     self.parent = parent
     self.owner = owner
 
-  # Returns a child node with the given name if one exists.
-  def get_child(self, name):
-    return self.children.get(os.path.join(self.path, name))
-
   # Adds a child if it is does not already exist.
   def add_child(self, name, commit=False):
     abspath = os.path.join(self.path, name)
@@ -122,6 +118,10 @@ class FileMetadata(db.Model):
       return child.add_all_children(toks[1], commit)
     else:
       return child
+
+  # Returns a child node with the given name if one exists.
+  def get_child(self, name):
+    return self.children.get(os.path.normpath(os.path.join(self.path, name)))
 
   # Given a path relative to the current node, return it if it exists.
   # Otherwise return the deepest node on the path that does exist.

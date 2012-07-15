@@ -1,24 +1,22 @@
 from dropspace import app
 from dropspace.models import DropboxUser
 import flask
-import json
+import os.path
 
 @app.route('/_spacedata')
 def spacedata():
   uid = flask.session.get('uid', -1)
   dropbox_uid = flask.request.args.get('uid', uid, type=int)
-  try:
-    f = open("deltas/%s" % dropbox_uid)
-    paths = json.load(f)
-  except Exception:
-    return flask.jsonify(result=[])
+  rootdir = flask.request.args.get('root', '/', type=str)
 
   data = []
-  rootdir = flask.request.args.get('root', '/foo', type=str)
-  if rootdir in paths:
-    for child in paths[rootdir]['names']:
-      child_size = paths["%s/%s" % (rootdir, child)]['bytes']
-      data.append([child, child_size])
+  user = DropboxUser.query.get(uid)
+  if user:
+    fmd = user.get_absolute_path(rootdir)
+    for (path, metadata) in fmd.children.items():
+      relpath = os.path.relpath(path, start=rootdir)
+      data.append([relpath, metadata.size])
+
   return flask.jsonify(result=data)
 
 @app.route('/_quotainfo')
