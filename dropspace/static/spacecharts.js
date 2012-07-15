@@ -44,7 +44,7 @@ $(document).ready(function() {
       data: [],
     }],
   };
-  $.getJSON($SCRIPT_ROOT + '/_spacedata', {
+  $.getJSON($SCRIPT_ROOT + '/_spaceinvent', {
     }, function (data) {
       sc_options.series[0].data = data.result || [];
       space_chart = new Highcharts.Chart(sc_options);
