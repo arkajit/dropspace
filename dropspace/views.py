@@ -5,8 +5,13 @@ import oauth
 
 @app.route('/stats')
 def stats():
-  uid = flask.session.get('uid')
-  account_info = DropboxUser.get_account_info(uid)
+  uid = flask.session.get('uid', -1)
+  user = DropboxUser.query.get(uid)
+  account_info = {}
+  if user:
+    account_info = user.account_info()
+    user.delta()
+
   if account_info:
     flask.session['loggedin'] = True
     quota_info = account_info['quota_info']
@@ -48,6 +53,3 @@ def finish_oauth():
     app.logger.debug('No stored access token found!')
 
   return flask.redirect(flask.url_for('stats'))
-
-def process_delta():
-  pass
