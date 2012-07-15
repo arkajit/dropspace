@@ -16,13 +16,13 @@ class DropboxUser(db.Model):
   root = db.relationship(
       'FileMetadata',
       backref=db.backref('owner', uselist=False, cascade='all, delete-orphan'),
+      cascade='all, delete-orphan',
       single_parent=True)
 
   def __init__(self, uid, token):
     self.id = uid
     self.token = token
     self.cursor = None
-    #self.root = FileMetadata(path='/', size=0, owner=self)
 
   def __repr__(self):
     return '<User(id=%r, root=%r)>' % (self.id, self.root)
@@ -50,26 +50,28 @@ class DropboxUser(db.Model):
     cursor = self.cursor or None
     try:
       d = client.delta(cursor)
+      print "Got delta with %d entries." % len(d['entries'])
     except dropbox.rest.ErrorResponse:
       return None
 
     if d['reset']:
       self.root = FileMetadata(path='/', size=0)
     for (path, metadata) in d['entries']:
+      print "Procesing path: %s" % path
       old_file = self.get_absolute_path(path)
       if old_file and old_file.path == path:
         if not metadata:
-          db.session.delete(old_file)
+          old_file.parent = None
         else:
           old_file.size = metadata['bytes']
-          db.session.merge(old_file)
       elif metadata:
         relpath = os.path.relpath(path, old_file.path)
         new_file = old_file.add_all_children(relpath)
         new_file.size = metadata['bytes']
-        db.session.merge(new_file)
     self.cursor = d['cursor']
+    print "About to merge user..."
     db.session.merge(self)
+    print "About to commit..."
     db.session.commit()
 
   @classmethod
@@ -90,7 +92,6 @@ class FileMetadata(db.Model):
   size = db.Column(db.BigInteger)
   parent_id = db.Column(db.Integer, db.ForeignKey('file_metadata.id'),
                         index=True)
-  #parent = db.relationship('FileMetadata', backref='children')
   children = db.relationship(
       'FileMetadata',
       cascade='all, delete-orphan',
@@ -108,23 +109,20 @@ class FileMetadata(db.Model):
     self.owner = owner
 
   # Adds a child if it is does not already exist.
-  def add_child(self, name, commit=False):
+  def add_child(self, name):
     abspath = os.path.join(self.path, name)
     if name != '' and abspath not in self.children:
       child = FileMetadata(abspath, size=0)
       self.children[abspath] = child
-      db.session.merge(self)
-      if commit:
-        db.session.commit()
       return child
 
   # Adds all missing children on the provided relative path.
   # Returns the node at the newly created path.
-  def add_all_children(self, relpath, commit=False):
+  def add_all_children(self, relpath):
     toks = relpath.split('/', 1)
-    child = self.add_child(toks[0], commit)
+    child = self.add_child(toks[0])
     if child and len(toks) == 2:
-      return child.add_all_children(toks[1], commit)
+      return child.add_all_children(toks[1])
     else:
       return child
 
