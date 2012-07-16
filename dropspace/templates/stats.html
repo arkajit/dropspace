@@ -1,5 +1,8 @@
 {% extends "base.html" %}
 {% block body %}
+<script type="text/javascript"
+        src="{{ url_for('static', filename='spacecharts.js') }}">
+</script>
 <h1>Dropbox Space Details</h1>
 <div id="quotachart"></div>
 <div id="spacechart"></div>
