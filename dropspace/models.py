@@ -48,31 +48,40 @@ class DropboxUser(db.Model):
   def delta(self):
     session.set_token(*self.access_token())
     cursor = self.cursor or None
-    try:
-      d = client.delta(cursor)
-      print "Got delta with %d entries." % len(d['entries'])
-    except dropbox.rest.ErrorResponse:
-      return None
+    more = True
+    num_deltas = 0
+    while more:
+      try:
+        d = client.delta(cursor)
+        print "Got %d new delta entries." % (len(d['entries']))
+      except dropbox.rest.ErrorResponse:
+        return None
 
-    if d['reset']:
-      self.root = FileMetadata(path='/', size=0)
-    for (path, metadata) in d['entries']:
-      print "Procesing path: %s" % path
-      old_file = self.get_absolute_path(path)
-      if old_file and old_file.path == path:
-        if not metadata:
-          old_file.parent = None
-        else:
-          old_file.set_size(metadata['bytes'])
-      elif metadata:
-        relpath = os.path.relpath(path, old_file.path)
-        new_file = old_file.add_all_children(relpath)
-        new_file.set_size(metadata['bytes'])
-    self.cursor = d['cursor']
+      if d['reset']:
+        self.root = FileMetadata(path='/', size=0)
+      for (path, metadata) in d['entries']:
+        num_deltas += 1
+        print "Procesing path: %s" % path
+        old_file = self.get_absolute_path(path)
+        if old_file and old_file.path == path:
+          if not metadata:
+            old_file.parent = None
+          else:
+            old_file.set_size(metadata['bytes'])
+        elif metadata:
+          relpath = os.path.relpath(path, old_file.path)
+          new_file = old_file.add_all_children(relpath)
+          new_file.set_size(metadata['bytes'])
+      cursor = d['cursor']
+      more = d['has_more'] or False
+      print "FINISHED PROCESSING %d DELTA ENTRIES." % num_deltas
+
+    self.cursor = cursor
     print "About to merge user..."
     db.session.merge(self)
     print "About to commit..."
     db.session.commit()
+    return num_deltas
 
   @classmethod
   def get_account_info(cls, id):

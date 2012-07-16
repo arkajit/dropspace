@@ -3,6 +3,17 @@ from dropspace.models import DropboxUser, FileMetadata
 import flask
 import os.path
 
+@app.route('/_delta')
+def process_delta():
+  uid = flask.session.get('uid', -1)
+  dropbox_uid = flask.request.args.get('uid', uid, type=int)
+  user = DropboxUser.query.get(dropbox_uid)
+  output = {'success': False, num_deltas: 0}
+  if user:
+    output['num_deltas'] = user.delta()
+    output['success'] = True
+  return flask.jsonify(result=output)
+
 @app.route('/_spacedata')
 def spacedata():
   uid = flask.session.get('uid', -1)
@@ -10,12 +21,13 @@ def spacedata():
   rootdir = flask.request.args.get('root', '/', type=str)
 
   data = []
-  user = DropboxUser.query.get(uid)
+  user = DropboxUser.query.get(dropbox_uid)
   if user:
     fmd = user.get_absolute_path(rootdir)
-    for (path, metadata) in fmd.children.items():
-      relpath = os.path.relpath(path, start=rootdir)
-      data.append([relpath, metadata.size])
+    if fmd:
+      for (path, metadata) in fmd.children.items():
+        relpath = os.path.relpath(path, start=rootdir)
+        data.append([relpath, metadata.size])
 
   return flask.jsonify(result=data)
 
