@@ -19,23 +19,6 @@ def spacedata():
 
   return flask.jsonify(result=data)
 
-@app.route('/_spaceinvent')
-def space_inventory():
-  uid = flask.session.get('uid', -1)
-  dropbox_uid = flask.request.args.get('uid', uid, type=int)
-  rootdir = flask.request.args.get('root', '/', type=str)
-
-  data = []
-  user = DropboxUser.query.get(uid)
-  if user:
-    fmd = user.get_absolute_path(rootdir)
-    if fmd:
-      for (path, metadata) in fmd.children.items():
-        relpath = os.path.relpath(path, start=rootdir)
-        data.append([relpath, metadata.get_size()])
-
-  return flask.jsonify(result=data)
-
 @app.route('/_quotainfo')
 def quota_info():
   uid = flask.session.get('uid', -1)

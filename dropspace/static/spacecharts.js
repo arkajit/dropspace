@@ -1,6 +1,7 @@
 var quota_chart, space_chart;
 
 $(document).ready(function() {
+  /*
   var qc_options = {
     chart: {
       renderTo: 'quotachart',
@@ -29,6 +30,7 @@ $(document).ready(function() {
       qc_options.series[0].data = data.result || [];
       quota_chart = new Highcharts.Chart(qc_options);
     });
+  */
 
   var sc_options = {
     chart: {
@@ -38,13 +40,19 @@ $(document).ready(function() {
     title: {
       text: 'Dropbox Space Inventory'
     },
+    tooltip: {
+      formatter: function() {
+        return '<b>'+this.point.name+'</b>: ' +
+          this.point.percentage.toFixed(2) + '%'
+      }
+    },
     series: [{
       type: 'pie',
       name: 'Space Used',
       data: [],
     }],
   };
-  $.getJSON($SCRIPT_ROOT + '/_spaceinvent', {
+  $.getJSON($SCRIPT_ROOT + '/_spacedata', {
     }, function (data) {
       sc_options.series[0].data = data.result || [];
       space_chart = new Highcharts.Chart(sc_options);

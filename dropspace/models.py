@@ -63,11 +63,11 @@ class DropboxUser(db.Model):
         if not metadata:
           old_file.parent = None
         else:
-          old_file.size = metadata['bytes']
+          old_file.set_size(metadata['bytes'])
       elif metadata:
         relpath = os.path.relpath(path, old_file.path)
         new_file = old_file.add_all_children(relpath)
-        new_file.size = metadata['bytes']
+        new_file.set_size(metadata['bytes'])
     self.cursor = d['cursor']
     print "About to merge user..."
     db.session.merge(self)
@@ -143,11 +143,11 @@ class FileMetadata(db.Model):
     else:
       return self
 
-  def get_size(self):
-    if len(self.children) == 0:
-      return self.size
-    else:
-      return sum([c.get_size() for c in self.children.values()])
+  def set_size(self, new_size):
+    diff = new_size - self.size
+    self.size = new_size
+    if self.parent:
+      self.parent.set_size(self.parent.size + diff)
 
   def __repr__(self):
     return '<FileMetadata(id=%r, path=%r, size=%r)>' % (self.id, self.path, self.size)
