@@ -26,22 +26,22 @@ body {
   cursor:default;
 }
 
-#filestab {
+#filestable {
   float:right;
+  width:500px;
 }
 
-#filestable {
-  width:500px;
+#ftable {
   border-collapse:collapse;
 }
 
-#filestable th {
+#ftable th {
   text-align:left;
   padding:5px;
   border:1px solid black;
 }
 
-#filestable td {
+#ftable td {
   padding:5px;
   border:1px solid black;
 }

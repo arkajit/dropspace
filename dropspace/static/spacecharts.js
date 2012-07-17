@@ -36,6 +36,15 @@ var getSpaceData = function(root) {
     });
 };
 
+var processDelta = function() {
+  $.getJSON($SCRIPT_ROOT + '/_delta', {
+  }, function (data) {
+    if (data.result.success) {
+      getSpaceData(root_dir);
+    }
+  });
+};
+
 $(document).ready(function() {
   var sc_options = {
     chart: {
@@ -99,7 +108,9 @@ $(document).ready(function() {
     }],
   };
   space_chart = new Highcharts.Chart(sc_options);
-  getSpaceData(root_dir);
+  $('#droptitle').html('<b>Grabbing latest changes from your Dropbox. ' +
+      'This may take a minute...</b>');
+  processDelta();
 
   $('#updir').click(function() {
       if (root_dir == '/') {
