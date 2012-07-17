@@ -1,10 +1,36 @@
 body {
-  font-family: sans-serif;
-  background: #eee;
+  font-family:sans-serif;
+  background:#eee;
+}
+
+#droptitle {
+  text-align:center;
 }
 
 #sitename {
   font-size:64px;
+}
+
+#spacechart {
+  float:left;
+  width:500px;
+}
+
+#filestable {
+  float:right;
+  width:500px;
+  border-collapse:collapse;
+}
+
+#filestable th {
+  text-align:left;
+  padding:5px;
+  border:1px solid black;
+}
+
+#filestable td {
+  padding:5px;
+  border:1px solid black;
 }
 
 #userdetails {

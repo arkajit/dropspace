@@ -1,11 +1,15 @@
 <!doctype html>
 <title>Dropspace</title>
 <link rel=stylesheet type=text/css href="{{ url_for('static', filename='style.css') }}">
+<link rel=stylesheet type=text/css href="{{ url_for('static', filename='green/style.css') }}">
 <script type="text/javascript"
         src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js">
 </script>
 <script type="text/javascript"
         src="{{ url_for('static', filename='highcharts.js') }}">
+</script>
+<script type="text/javascript"
+        src="{{ url_for('static', filename='jquery.tablesorter.min.js') }}">
 </script>
 <script type="text/javascript">
   $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
