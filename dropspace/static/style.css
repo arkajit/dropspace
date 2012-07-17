@@ -16,8 +16,11 @@ body {
   width:500px;
 }
 
-#filestable {
+#filestab {
   float:right;
+}
+
+#filestable {
   width:500px;
   border-collapse:collapse;
 }

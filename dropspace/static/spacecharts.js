@@ -24,7 +24,7 @@ $(document).ready(function() {
       type: 'pie',
     },
     title: {
-      text: 'Dropbox Space Inventory'
+      text: 'Subdirectory Inventory'
     },
     subtitle: {
       text: 'Details for ' + root_dir
