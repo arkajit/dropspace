@@ -16,8 +16,6 @@ var joinPaths = function(a, b) {
 }
 
 $(document).ready(function() {
-  $('#filestable').tablesorter({ sortList: [1,1] });
-
   var sc_options = {
     chart: {
       renderTo: 'spacechart',
@@ -68,8 +66,12 @@ $(document).ready(function() {
     },
     tooltip: {
       formatter: function() {
-        return '<b>'+this.point.name+'</b>: ' +
-          this.point.percentage.toFixed(2) + '%'
+        var s = '<b>'+this.point.name+'</b>: ' +
+          this.point.percentage.toFixed(2) + '%.';
+        if (this.point.name != 'Files') {
+          s += ' Click to drilldown into subdirectory.';
+        }
+        return s;
       }
     },
     series: [{

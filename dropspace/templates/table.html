@@ -1,0 +1,12 @@
+<thead>
+  <tr><th>File Name</th><th>File Size</th></tr>
+</thead>
+<tbody id="ftbody">
+{% for f in files %}
+  {% if f.name == 'Total' %}
+  <tr><td><b>{{ f.name }}</b></td><td><b>{{ f.size | filesizefmt }}</b></td></tr>
+  {% else %}
+  <tr><td>{{ f.name }}</td><td>{{ f.size | filesizefmt }}</td></tr>
+  {% endif %}
+{% endfor %}
+</tbody>
