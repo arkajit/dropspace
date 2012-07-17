@@ -20,10 +20,13 @@ def spacedata():
   uid = flask.session.get('uid', -1)
   dropbox_uid = flask.request.args.get('uid', uid, type=int)
   rootdir = flask.request.args.get('root', '/', type=str)
+  if rootdir != '/':
+    rootdir = rootdir.rstrip('/')
 
   data = []
   files = []
   filestable = ''
+  totsum = 0
   user = DropboxUser.query.get(dropbox_uid)
   if user:
     fmd = user.get_absolute_path(rootdir)

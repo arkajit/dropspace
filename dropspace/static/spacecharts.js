@@ -2,7 +2,15 @@ var quota_chart, space_chart;
 var root_dir = '/';
 
 var updateFileInfo = function(data) {
-  var root = (root_dir == '/') ? 'Root' : root_dir;
+  var root;
+  if (root_dir == '/') {
+    root = 'Root';
+    $('#updir').css('visibility', 'hidden')
+  } else {
+    root = root_dir;
+    $('#updir').css('visibility', 'visible')
+  }
+  $('#updir a').removeClass('active');
   $('#droptitle').html(root + ': ' + data.total);
   $('#filestable').html(data.filestable);
 };
@@ -13,13 +21,31 @@ var joinPaths = function(a, b) {
   } else {
     return a + '/' + b;
   }
-}
+};
+
+var getSpaceData = function(root) {
+  var newroot = root || '/';
+  $.getJSON($SCRIPT_ROOT + '/_spacedata', {
+      'root': newroot
+    }, function (data) {
+      space_chart.series[0].setData(data.result || []);
+      root_dir = newroot;
+      space_chart.setTitle(null,
+         { text: 'Details for ' + root_dir });
+      updateFileInfo(data);
+    });
+};
 
 $(document).ready(function() {
   var sc_options = {
     chart: {
+      backgroundColor: '#eee',
       renderTo: 'spacechart',
       type: 'pie',
+      animation: {
+        duration: 1500  // ms
+      },
+      width: 500  // px
     },
     title: {
       text: 'Subdirectory Inventory'
@@ -42,15 +68,7 @@ $(document).ready(function() {
                 return;
               }
               var new_rootdir = joinPaths(root_dir, this.name);
-              $.getJSON($SCRIPT_ROOT + '/_spacedata', {
-                'root': new_rootdir
-              }, function (data) {
-                  space_chart.series[0].setData(data.result || []);
-                  root_dir = new_rootdir;
-                  space_chart.setTitle(null,
-                     { text: 'Details for ' + root_dir });
-                  updateFileInfo(data);
-              });
+              getSpaceData(new_rootdir);
             },
             mouseOver: function() {
               this.sliced = true;
@@ -80,11 +98,17 @@ $(document).ready(function() {
       data: [],
     }],
   };
+  space_chart = new Highcharts.Chart(sc_options);
+  getSpaceData(root_dir);
 
-  $.getJSON($SCRIPT_ROOT + '/_spacedata', {
-    }, function (data) {
-      sc_options.series[0].data = data.result || [];
-      space_chart = new Highcharts.Chart(sc_options);
-      updateFileInfo(data);
-    });
+  $('#updir').click(function() {
+      if (root_dir == '/') {
+        return;
+      }
+      $('#updir a').addClass('active');
+      var lastslash = root_dir.lastIndexOf('/');
+      var prevdir = root_dir.slice(0, lastslash);
+      console.log('Going to prevdir: ' + prevdir);
+      getSpaceData(prevdir);
+  });
 });

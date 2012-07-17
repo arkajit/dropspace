@@ -16,6 +16,16 @@ body {
   width:500px;
 }
 
+#updir {
+  visibility:hidden;
+  text-align:center;
+}
+
+.activelink {
+  pointer-events:none;
+  cursor:default;
+}
+
 #filestab {
   float:right;
 }
