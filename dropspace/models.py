@@ -92,8 +92,12 @@ class DropboxUser(db.Model):
 
   @classmethod
   def add_user(cls, uid, token):
-    dropbox_user = DropboxUser(uid, token)
-    db.session.merge(dropbox_user)
+    user = DropboxUser.query.get(uid)
+    if user:
+      user.token = token
+    else:
+      user = DropboxUser(uid, token)
+    db.session.merge(user)
     db.session.commit()
 
 class FileMetadata(db.Model):
