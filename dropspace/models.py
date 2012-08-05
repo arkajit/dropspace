@@ -65,6 +65,7 @@ class DropboxUser(db.Model):
         old_file = self.get_absolute_path(path)
         if old_file and old_file.path == path:
           if not metadata:
+            old_file.set_size(0)
             old_file.parent = None
           else:
             old_file.set_size(metadata['bytes'])
@@ -106,7 +107,6 @@ class FileMetadata(db.Model):
       cascade='all, delete-orphan',
       backref=db.backref('parent', remote_side=id),
       collection_class=attribute_mapped_collection('path'),
-      innerjoin=True,
       join_depth=2,
       lazy="joined",
       single_parent=True)
@@ -153,6 +153,7 @@ class FileMetadata(db.Model):
       return self
 
   def set_size(self, new_size):
+    new_size = max(0, new_size)  # Only allow non-negative sizes.
     diff = new_size - self.size
     self.size = new_size
     if self.parent:
