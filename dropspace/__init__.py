@@ -7,7 +7,7 @@ from flask.ext.sqlalchemy import SQLAlchemy
 app = flask.Flask(__name__)
 app.secret_key = '\x9de\xbe\x8d\xfc\xacw\xc1\xefhO\x8dm\xbd\xc9\xb9i\xbb\x99}\xf9\xd1k\x17'
 
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////root/dbs/prod.db'
 app.config['SQLALCHEMY_ECHO'] = True
 db = SQLAlchemy(app)
 

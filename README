@@ -19,9 +19,10 @@ Run Development server:
   Launches at localhost:5000
 
 Run Production server:
-  (venv)$ gunicorn -b 0.0.0.0:9000 -w 4 dropspace:app --access-logfile=prod.log -D
+  (venv)$ gunicorn -b 0.0.0.0:9000 -w 4 dropspace:app --access-logfile=prod.log --error-logfile=prod.err -D -t 300
   Will launch a daemonized Gunicorn process at localhost:9000.
-  Writes access logs to prod.log.
+  Writes access logs to prod.log. Writes error logs to prod.err.
+  Longer worker timeout to enable long-running delta computations to finish.
 
 Reset the DB:
   (venv)$ python resetdb.py
